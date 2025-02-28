@@ -1,0 +1,422 @@
+From 5849d47329389dacaa4e6516fef86495afb1fe39 Mon Sep 17 00:00:00 2001
+From: Anh Thu Nguyen <anguyen@yext.com>
+Date: Fri, 28 Feb 2025 17:22:12 -0500
+Subject: [PATCH] applied
+
+---
+ cards/helpoverride/template.hbs               | 40 ++++------
+ .../allfields-standard-ellipses/component.js  | 14 +++-
+ .../allfields-standard-ellipses/template.hbs  | 76 +++++++++----------
+ .../component.js                              |  6 +-
+ .../template.hbs                              | 14 +++-
+ static/js/custom-modules.js                   | 51 +------------
+ static/js/iframe-common.js                    |  6 +-
+ 7 files changed, 82 insertions(+), 125 deletions(-)
+
+diff --git a/cards/helpoverride/template.hbs b/cards/helpoverride/template.hbs
+index 783189e..0d5ba79 100644
+--- a/cards/helpoverride/template.hbs
++++ b/cards/helpoverride/template.hbs
+@@ -103,60 +103,48 @@
+   </button>
+   <div class="copyMenuOptionsWrapper">
+     {{#if card.menuCopyUrl}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageClipboard(this, '{{card.menuCopyUrl}}', 'Copy Result Link')">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, 'copyLink', {{json card}})">
+         <li class="copyMenu-copy-option made-visible">Copy Result Link</li>
+         <li class="copyMenu-copied-message"><div>Copied!</div></li>
+       </ul>
+     {{/if}}
+     {{#if card.menuCopyText}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageClipboard(this, {{card.menuCopyText}}, 'Copy Result Text')">
+-        <li class="copyMenu-copy-option made-visible">Copy Result Text</li>
+-        <li class="copyMenu-copied-message"><div>Copied!</div></li>
+-      </ul>
+-    {{/if}}
+-    {{!-- {{#if card.menuCopyUrl}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageZD(this, 'insertLink', '{{card.menuCopyUrl}}', '{{card.sanitizedTitle}}')">
+-        <li class="copyMenu-copy-option made-visible">Insert Link</li>
+-        <li class="copyMenu-copied-message"><div>Inserted!</div></li>
+-      </ul>
+-    {{/if}} --}}
+-    {{!-- {{#if card.menuCopyUrl}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageSF(this, 'copyLink', {{json card}})">
+-        <li class="copyMenu-copy-option made-visible">Copy Result Link</li>
+-        <li class="copyMenu-copied-message"><div>Copied!</div></li>
+-      </ul>
+-    {{/if}}
+-    {{#if card.menuCopyText}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageSF(this, 'copyResultText', {{json card}})">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, 'copyResultText', {{json card}})">
+           <li class="copyMenu-copy-option made-visible">Copy Result Text</li>
+           <li class="copyMenu-copied-message"><div>Copied!</div></li>
+       </ul>
+-    {{/if}} --}}
++    {{/if}}
+     {{#if card.attachAsCase}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageSF(this, 'attachToCase', {{json card}})">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, 'attachToCase', {{json card}})">
+           <li class="copyMenu-copy-option made-visible">Attach to Case</li>
+           <li class="copyMenu-copied-message"><div>Attached!</div></li>
+       </ul>
+     {{/if}}
++    {{#if card.attachAsCase}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, 'openInNewTab', {{json card}})">
++          <li class="copyMenu-copy-option made-visible">Open in New Tab</li>
++          <li class="copyMenu-copied-message"><div>Opened!</div></li>
++      </ul>
++    {{/if}}
+     {{#if card.areNotesEnabled}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageSF(this, 'attachAsNote', {{json card}})">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, 'attachAsNote', {{json card}})">
+           <li class="copyMenu-copy-option made-visible">Attach as Note</li>
+           <li class="copyMenu-copied-message"><div>Attached!</div></li>
+       </ul>
+     {{/if}}
+     {{#if card.postToChat}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageSF(this, 'sendToChat', {{json card}})">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, 'sendToChat', {{json card}})">
+           <li class="copyMenu-copy-option made-visible">Send to Chat</li>
+           <li class="copyMenu-copied-message"><div>Sent!</div></li>
+       </ul>
+     {{/if}}
+     {{#if card.isChatterEnabled}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageSF(this, 'postToChatter', {{json card}})">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, 'postToChatter', {{json card}})">
+           <li class="copyMenu-copy-option made-visible">Post to Chatter</li>
+           <li class="copyMenu-copied-message"><div>Posted!</div></li>
+       </ul>
+     {{/if}}
+   </div>
+-</div> 
++</div>
+ {{/if}}
+ {{/inline}}
+\ No newline at end of file
+diff --git a/directanswercards/allfields-standard-ellipses/component.js b/directanswercards/allfields-standard-ellipses/component.js
+index 7cc1367..4139265 100644
+--- a/directanswercards/allfields-standard-ellipses/component.js
++++ b/directanswercards/allfields-standard-ellipses/component.js
+@@ -14,6 +14,12 @@ class allfields_standard_ellipsesComponent extends BaseDirectAnswerCard['allfiel
+     let isArray = Array.isArray(answer.value);
+     let value, arrayValue, regularValue, isRichText, copyValue;
+     const linkTarget = AnswersExperience.runtimeConfig.get('linkTarget') || '_top';
++    const salesforcePageOrigin = AnswersExperience.runtimeConfig.get('salesforcePageOrigin');
++    const isChatterEnabled = AnswersExperience.runtimeConfig.get('isChatterEnabled') || false;
++    const areNotesEnabled = AnswersExperience.runtimeConfig.get('areNotesEnabled') || false;
++
++    let attachAsCase = (salesforcePageOrigin == "Case");
++    let postToChat = (salesforcePageOrigin == "LiveChatTranscript");
+ 
+     switch (answer.fieldType) {
+       case 'url':
+@@ -212,7 +218,11 @@ class allfields_standard_ellipsesComponent extends BaseDirectAnswerCard['allfiel
+       negativeFeedbackSrText: 'This did not answer my question', // Screen reader only text for thumbs-down
+       isRichText: isRichText, // If the direct answer is sourced from a rich-text field
+       menuCopyUrl: value.url,
+-      menuCopyText: "`" + copyValue + "`",
++      menuCopyText: copyValue,
++      attachAsCase: attachAsCase,
++      postToChat: postToChat,
++      isChatterEnabled: isChatterEnabled,
++      areNotesEnabled: areNotesEnabled,
+     };
+   }
+ 
+@@ -230,4 +240,4 @@ ANSWERS.registerTemplate(
+   'directanswercards/allfields-standard-ellipses',
+   {{{stringifyPartial (read 'directanswercards/allfields-standard-ellipses/template') }}}
+ );
+-ANSWERS.registerComponentType(allfields_standard_ellipsesComponent);
+\ No newline at end of file
++ANSWERS.registerComponentType(allfields_standard_ellipsesComponent);
+diff --git a/directanswercards/allfields-standard-ellipses/template.hbs b/directanswercards/allfields-standard-ellipses/template.hbs
+index 1834188..3ad2824 100644
+--- a/directanswercards/allfields-standard-ellipses/template.hbs
++++ b/directanswercards/allfields-standard-ellipses/template.hbs
+@@ -188,38 +188,7 @@
+ {{/inline}}
+ 
+ {{#*inline 'copyMenu'}}
+-{{#if menuCopyText}}
+-<div class="Answers-iconWrapper Answers-AllFieldsEllipses">
+-  <button class="Answers-icon Answers-copy-menu">
+-    {{> icons/iconPartial
+-        iconName="kabob"
+-    }}
+-  </button>
+-  <div class="Answers-dropdown-copy-options">
+-    {{#if menuCopyText}}
+-    <a class="Answers-copy-button" onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, {{menuCopyText}}, 'Copy result text')">
+-      <div class="Answers-copy-message-container">
+-        <div class="Answers-copy-option made-visible"> Copy result text </div>
+-        <div class="Answers-copied-message"> Copied! {{> icons/iconPartial iconName="check" iconUrl="static/assets/images/checkmark.svg"}} </div>
+-      </div>
+-    </a>
+-      <br/>
+-    {{/if}}
+-    {{#if menuCopyUrl}}
+-    <a class="Answers-copy-button" onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, '{{menuCopyUrl}}', 'Copy help article link')">
+-      <div class="Answers-copy-message-container">
+-        <div class="Answers-copy-option made-visible"> Copy help article link </div>
+-        <div class="Answers-copied-message"> Copied! {{> icons/iconPartial iconName="check" iconUrl="static/assets/images/checkmark.svg"}} </div>
+-      </div>
+-    </a>
+-    {{/if}}
+-  </div>
+-</div> 
+-{{/if}}
+-{{/inline}}
+-
+-{{#*inline 'copyMenu'}}
+-{{#if (any menuCopyText menuCopyUrl)}}
++{{#if (any menuCopyText menuCopyUrl attachAsCase postToChat isChatterEnabled areNotesEnabled)}}
+ <div class="copyMenuWrapper">
+   <button class="copyMenuButton">
+     {{> icons/iconPartial
+@@ -227,20 +196,49 @@
+     }}
+   </button>
+   <div class="copyMenuOptionsWrapper">
++    {{#if menuCopyUrl}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'copyLink', '{{entityName}}', '{{menuCopyUrl}}')">
++        <li class="copyMenu-copy-option made-visible">Copy Result Link</li>
++        <li class="copyMenu-copied-message"><div>Copied!</div></li>
++      </ul>
++    {{/if}}
+     {{#if menuCopyText}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, {{menuCopyText}}, 'Copy Result Text')">
+-        
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'copyResultText',' {{entityName}}', '{{menuCopyText}}')">
+           <li class="copyMenu-copy-option made-visible">Copy Result Text</li>
+           <li class="copyMenu-copied-message"><div>Copied!</div></li>
+       </ul>
+     {{/if}}
+-    {{#if menuCopyUrl}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessage(this, '{{menuCopyUrl}}', 'Copy Link')">
+-        <li class="copyMenu-copy-option made-visible">Copy Link</li>
+-        <li class="copyMenu-copied-message"><div>Copied!</div></li>
++    {{#if (all menuCopyText attachAsCase)}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'attachToCase', '{{entityName}}', '{{menuCopyText}}')">
++          <li class="copyMenu-copy-option made-visible">Attach to Case</li>
++          <li class="copyMenu-copied-message"><div>Attached!</div></li>
++      </ul>
++    {{/if}}
++    {{#if (all menuCopyText attachAsCase)}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'openInNewTab', '{{entityName}}', '{{menuCopyText}}')">
++          <li class="copyMenu-copy-option made-visible">Open in New Tab</li>
++          <li class="copyMenu-copied-message"><div>Opened!</div></li>
++      </ul>
++    {{/if}}
++    {{#if (all menuCopyText areNotesEnabled)}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'attachAsNote', '{{entityName}}', '{{menuCopyText}}')">
++          <li class="copyMenu-copy-option made-visible">Attach as Note</li>
++          <li class="copyMenu-copied-message"><div>Attached!</div></li>
++      </ul>
++    {{/if}}
++    {{#if (all menuCopyText postToChat)}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'sendToChat', '{{entityName}}', '{{menuCopyText}}')">
++          <li class="copyMenu-copy-option made-visible">Send to Chat</li>
++          <li class="copyMenu-copied-message"><div>Sent!</div></li>
++      </ul>
++    {{/if}}
++    {{#if (all menuCopyText isChatterEnabled)}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'postToChatter', '{{entityName}}', '{{menuCopyText}}')">
++          <li class="copyMenu-copy-option made-visible">Post to Chatter</li>
++          <li class="copyMenu-copied-message"><div>Posted!</div></li>
+       </ul>
+     {{/if}}
+   </div>
+-</div> 
++</div>
+ {{/if}}
+ {{/inline}}
+\ No newline at end of file
+diff --git a/directanswercards/documentsearch-standard-ellipses/component.js b/directanswercards/documentsearch-standard-ellipses/component.js
+index c51e5e3..1d586ab 100644
+--- a/directanswercards/documentsearch-standard-ellipses/component.js
++++ b/directanswercards/documentsearch-standard-ellipses/component.js
+@@ -29,7 +29,7 @@ class documentsearch_standard_ellipsesComponent extends BaseDirectAnswerCard['do
+     }
+     let sanitizedValue = document.createElement('div');
+     sanitizedValue.innerHTML = snippetValue;
+-    sanitizedValue = Array.from(sanitizedValue.children[0].children, child => child.outerHTML).join('');
++    sanitizedValue = Array.from(sanitizedValue.children[0].children, child => child.outerHTML).join('').replace(/\n/g, "\\n");
+ 
+     return {
+       value: answer.value,
+@@ -54,7 +54,7 @@ class documentsearch_standard_ellipsesComponent extends BaseDirectAnswerCard['do
+       positiveFeedbackSrText: 'This answered my question', // Screen reader only text for thumbs-up
+       negativeFeedbackSrText: 'This did not answer my question', // Screen reader only text for thumbs-down
+       menuCopyUrl: relatedItemData.website || (relatedItemData.fieldValues && relatedItemData.fieldValues.landingPageUrl),
+-      menuCopyText: "`" + sanitizedValue + "`",
++      menuCopyText: sanitizedValue,
+       attachAsCase: attachAsCase,
+       postToChat: postToChat,
+       isChatterEnabled: isChatterEnabled,
+@@ -76,4 +76,4 @@ ANSWERS.registerTemplate(
+   'directanswercards/documentsearch-standard-ellipses',
+   {{{stringifyPartial (read 'directanswercards/documentsearch-standard-ellipses/template') }}}
+ );
+-ANSWERS.registerComponentType(documentsearch_standard_ellipsesComponent);
+\ No newline at end of file
++ANSWERS.registerComponentType(documentsearch_standard_ellipsesComponent);
+diff --git a/directanswercards/documentsearch-standard-ellipses/template.hbs b/directanswercards/documentsearch-standard-ellipses/template.hbs
+index d926f8f..9b76ff8 100644
+--- a/directanswercards/documentsearch-standard-ellipses/template.hbs
++++ b/directanswercards/documentsearch-standard-ellipses/template.hbs
+@@ -4,7 +4,7 @@
+     <div class="HitchhikerDocumentSearchStandard-content">
+       <div class="HitchhikerDocumentSearchStandard-column">
+         {{#unless value}} {{> copyMenu }} {{/unless}}
+-        {{> featured_snippet }} 
++        {{> featured_snippet }}
+         {{> view_details_link }}
+       </div>
+       {{> cta CTA linkTarget=linkTarget}}
+@@ -129,13 +129,13 @@
+   </button>
+   <div class="copyMenuOptionsWrapper">
+     {{#if menuCopyUrl}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageClipboard(this, '{{menuCopyUrl}}', 'Copy Link')">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'copyLink', '{{menuCopyUrl}}')">
+         <li class="copyMenu-copy-option made-visible">Copy Result Link</li>
+         <li class="copyMenu-copied-message"><div>Copied!</div></li>
+       </ul>
+     {{/if}}
+     {{#if menuCopyText}}
+-      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageClipboard(this, {{menuCopyText}}, 'Copy Result Text')">
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'copyResultText', '{{viewDetailsText}}', '{{menuCopyText}}')">
+           <li class="copyMenu-copy-option made-visible">Copy Result Text</li>
+           <li class="copyMenu-copied-message"><div>Copied!</div></li>
+       </ul>
+@@ -146,6 +146,12 @@
+           <li class="copyMenu-copied-message"><div>Attached!</div></li>
+       </ul>
+     {{/if}}
++    {{#if (all menuCopyText attachAsCase)}}
++      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'openInNewTab', '{{viewDetailsText}}', '{{menuCopyText}}')">
++          <li class="copyMenu-copy-option made-visible">Open in New Tab</li>
++          <li class="copyMenu-copied-message"><div>Opened!</div></li>
++      </ul>
++    {{/if}}
+     {{#if (all menuCopyText areNotesEnabled)}}
+       <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'attachAsNote', '{{viewDetailsText}}', '{{menuCopyText}}')">
+           <li class="copyMenu-copy-option made-visible">Attach as Note</li>
+@@ -165,6 +171,6 @@
+       </ul>
+     {{/if}}
+   </div>
+-</div> 
++</div>
+ {{/if}}
+ {{/inline}}
+\ No newline at end of file
+diff --git a/static/js/custom-modules.js b/static/js/custom-modules.js
+index b6d00c1..9c67e4a 100644
+--- a/static/js/custom-modules.js
++++ b/static/js/custom-modules.js
+@@ -1,50 +1,5 @@
+ // Modules exported here will be included in bundle.js
+-export function showCopiedMessageClipboard(button, copyData) {
+-  const clipboardData = {
+-    'text/html': new Blob([copyData], {type: 'text/html'}),
+-  };
+-  clipboardData['text/plain'] = new Blob([convertToPlainText(copyData)], {type: 'text/plain'});
+-  const clipboardItem = new ClipboardItem(clipboardData);
+-  navigator.clipboard.write([clipboardItem]);
+-
+-  var optionText = button.getElementsByClassName("copyMenu-copy-option")[0];
+-  optionText.classList.add('not-visible');
+-  optionText.classList.remove('made-visible');
+-  var copiedText = button.getElementsByClassName("copyMenu-copied-message")[0];
+-  copiedText.classList.add('made-visible');
+-  setTimeout(function() {
+-    optionText.classList.add('made-visible');
+-    optionText.classList.remove('not-visible');
+-    copiedText.classList.remove('made-visible');
+-    }, 2000);
+-}
+-
+-function convertToPlainText(html){
+-    let doc = new DOMParser().parseFromString(html, 'text/html');
+-    return doc.body.textContent || "";
+-}
+-
+-export function showCopiedMessageZD(button, eventType, value, title) {
+-  if (eventType == 'copyResultText' || eventType == 'copyLink') {
+-    navigator.clipboard.writeText(value);
+-  } else {
+-    var message = {"eventType": eventType, "value": value, "title": title};
+-    parent.postMessage(message, "*");
+-  }
+- 
+-  var optionText = button.getElementsByClassName("copyMenu-copy-option")[0];
+-  optionText.classList.add('not-visible');
+-  optionText.classList.remove('made-visible');
+-  var copiedText = button.getElementsByClassName("copyMenu-copied-message")[0];
+-  copiedText.classList.add('made-visible');
+-  setTimeout(function() { 
+-    optionText.classList.add('made-visible');
+-    optionText.classList.remove('not-visible');
+-    copiedText.classList.remove('made-visible');
+-    }, 2000);
+-};
+-
+-export function showCopiedMessageSF(button, eventType, card) {
++export function showCopiedMessage(button, eventType, card) {
+   card["eventType"] = eventType;
+   card["isDirectAnswer"] = false;
+   parent.postMessage(card, "*");
+@@ -54,7 +9,7 @@ export function showCopiedMessageSF(button, eventType, card) {
+   optionText.classList.remove('made-visible');
+   var copiedText = button.getElementsByClassName("copyMenu-copied-message")[0];
+   copiedText.classList.add('made-visible');
+-  setTimeout(function() { 
++  setTimeout(function() {
+     optionText.classList.add('made-visible');
+     optionText.classList.remove('not-visible');
+     copiedText.classList.remove('made-visible');
+@@ -70,7 +25,7 @@ export function showCopiedMessageDirect(button, eventType, title, value) {
+   optionText.classList.remove('made-visible');
+   var copiedText = button.getElementsByClassName("copyMenu-copied-message")[0];
+   copiedText.classList.add('made-visible');
+-  setTimeout(function() { 
++  setTimeout(function() {
+     optionText.classList.add('made-visible');
+     optionText.classList.remove('not-visible');
+     copiedText.classList.remove('made-visible');
+diff --git a/static/js/iframe-common.js b/static/js/iframe-common.js
+index c14f5bb..2f26f6e 100644
+--- a/static/js/iframe-common.js
++++ b/static/js/iframe-common.js
+@@ -9,7 +9,7 @@ const iframeMessageQueue = [];
+ 
+ /**
+  * Puts an iframe on the page of an Answers experience and sets up resizing and cross-domain communication
+- * 
++ *
+  * @param {string} domain The location of the answers experience
+  * @param {AnswersExperienceFrame} answersExperienceFrame
+  */
+@@ -65,7 +65,7 @@ export function generateIFrame(domain, answersExperienceFrame) {
+     iframeUrl += '?' + new_params.join('&');
+     return iframeUrl;
+   };
+-  
++
+   iframe.src = calcFrameSrc();
+   iframe.frameBorder = 0;
+ 
+@@ -124,7 +124,7 @@ export function generateIFrame(domain, answersExperienceFrame) {
+ /**
+  * Sends data to the answers iframe if possible. Otherwise the message is queued
+  * so that it can be sent when the iframe initializes.
+- * @param {Object} obj 
++ * @param {Object} obj
+  */
+ export function sendToIframe (obj) {
+   const iframe = document.querySelector('#answers-frame');
+-- 
+2.48.1
+
