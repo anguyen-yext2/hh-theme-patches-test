@@ -1,20 +1,20 @@
-From 622a7faf704c9d9444e245fafa66aa746e92de68 Mon Sep 17 00:00:00 2001
-From: Oliver Shi <oshi@yext.com>
-Date: Wed, 6 Jul 2022 17:17:22 -0400
-Subject: [PATCH] Revert "remove stuff again"
+From e3a4923718c8e5265221585219c0586a5caff7a6 Mon Sep 17 00:00:00 2001
+From: Anh Thu Nguyen <anguyen@yext.com>
+Date: Fri, 28 Feb 2025 03:10:38 -0500
+Subject: [PATCH] Reapply "undo"
 
-This reverts commit 240242a9ef6dd2e3dcf9e9e40702e24b1cfa2daa.
+This reverts commit 180acd045d8231297476d0be4edb534d01af0bb8.
 ---
  cards/helpoverride/component.js               |  83 ++++++
- cards/helpoverride/template.hbs               | 144 +++++++++++
- .../allfields-standard-ellipses/component.js  | 243 ++++++++++++++++++
- .../allfields-standard-ellipses/template.hbs  | 238 +++++++++++++++++
+ cards/helpoverride/template.hbs               | 150 +++++++++++
+ .../allfields-standard-ellipses/component.js  | 243 +++++++++++++++++
+ .../allfields-standard-ellipses/template.hbs  | 244 ++++++++++++++++++
  .../component.js                              |  79 ++++++
- .../template.hbs                              | 170 ++++++++++++
+ .../template.hbs                              | 176 +++++++++++++
  static/js/custom-modules.js                   |  33 +++
  static/js/iframe-common.js                    | 137 ++++++++++
  static/scss/answers.scss                      |  92 ++++++-
- 9 files changed, 1218 insertions(+), 1 deletion(-)
+ 9 files changed, 1236 insertions(+), 1 deletion(-)
  create mode 100644 cards/helpoverride/component.js
  create mode 100644 cards/helpoverride/template.hbs
  create mode 100644 directanswercards/allfields-standard-ellipses/component.js
@@ -116,10 +116,10 @@ index 0000000..066e10b
 \ No newline at end of file
 diff --git a/cards/helpoverride/template.hbs b/cards/helpoverride/template.hbs
 new file mode 100644
-index 0000000..d392d1b
+index 0000000..0d5ba79
 --- /dev/null
 +++ b/cards/helpoverride/template.hbs
-@@ -0,0 +1,144 @@
+@@ -0,0 +1,150 @@
 +<div class="HitchhikerDocumentStandard {{cardName}}">
 +  {{> image }}
 +  <div class="HitchhikerDocumentStandard-body">
@@ -267,7 +267,7 @@ index 0000000..d392d1b
 +      </ul>
 +    {{/if}}
 +  </div>
-+</div> 
++</div>
 +{{/if}}
 +{{/inline}}
 \ No newline at end of file
@@ -522,10 +522,10 @@ index 0000000..4139265
 +ANSWERS.registerComponentType(allfields_standard_ellipsesComponent);
 diff --git a/directanswercards/allfields-standard-ellipses/template.hbs b/directanswercards/allfields-standard-ellipses/template.hbs
 new file mode 100644
-index 0000000..abbdecb
+index 0000000..3ad2824
 --- /dev/null
 +++ b/directanswercards/allfields-standard-ellipses/template.hbs
-@@ -0,0 +1,238 @@
+@@ -0,0 +1,244 @@
 +<div class="HitchhikerAllFieldsStandard {{cardName}}">
 +  {{#if (any iconName iconUrl entityName fieldName)}}
 +  <div class="HitchhikerAllFieldsStandard-title">
@@ -767,7 +767,7 @@ index 0000000..abbdecb
 +      </ul>
 +    {{/if}}
 +  </div>
-+</div> 
++</div>
 +{{/if}}
 +{{/inline}}
 \ No newline at end of file
@@ -858,17 +858,17 @@ index 0000000..d8962d1
 +ANSWERS.registerComponentType(documentsearch_standard_ellipsesComponent);
 diff --git a/directanswercards/documentsearch-standard-ellipses/template.hbs b/directanswercards/documentsearch-standard-ellipses/template.hbs
 new file mode 100644
-index 0000000..a97bb4f
+index 0000000..9b76ff8
 --- /dev/null
 +++ b/directanswercards/documentsearch-standard-ellipses/template.hbs
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,176 @@
 +<div class="HitchhikerDocumentSearchStandard {{cardName}}">
 +  <div class="HitchhikerDocumentSearchStandard-titleAndContent">
 +    {{> title }}
 +    <div class="HitchhikerDocumentSearchStandard-content">
 +      <div class="HitchhikerDocumentSearchStandard-column">
 +        {{#unless value}} {{> copyMenu }} {{/unless}}
-+        {{> featured_snippet }} 
++        {{> featured_snippet }}
 +        {{> view_details_link }}
 +      </div>
 +      {{> cta CTA linkTarget=linkTarget}}
@@ -1012,7 +1012,7 @@ index 0000000..a97bb4f
 +    {{/if}}
 +    {{#if (all menuCopyText attachAsCase)}}
 +      <ul onclick="HitchhikerJS.CustomModules.showCopiedMessageDirect(this, 'openInNewTab', '{{viewDetailsText}}', '{{menuCopyText}}')">
-+          <li class="copyMenu-copy-option made-visible">Open In New Tab</li>
++          <li class="copyMenu-copy-option made-visible">Open in New Tab</li>
 +          <li class="copyMenu-copied-message"><div>Opened!</div></li>
 +      </ul>
 +    {{/if}}
@@ -1035,13 +1035,13 @@ index 0000000..a97bb4f
 +      </ul>
 +    {{/if}}
 +  </div>
-+</div> 
++</div>
 +{{/if}}
 +{{/inline}}
 \ No newline at end of file
 diff --git a/static/js/custom-modules.js b/static/js/custom-modules.js
 new file mode 100644
-index 0000000..ca737ff
+index 0000000..9c67e4a
 --- /dev/null
 +++ b/static/js/custom-modules.js
 @@ -0,0 +1,33 @@
@@ -1056,7 +1056,7 @@ index 0000000..ca737ff
 +  optionText.classList.remove('made-visible');
 +  var copiedText = button.getElementsByClassName("copyMenu-copied-message")[0];
 +  copiedText.classList.add('made-visible');
-+  setTimeout(function() { 
++  setTimeout(function() {
 +    optionText.classList.add('made-visible');
 +    optionText.classList.remove('not-visible');
 +    copiedText.classList.remove('made-visible');
@@ -1072,7 +1072,7 @@ index 0000000..ca737ff
 +  optionText.classList.remove('made-visible');
 +  var copiedText = button.getElementsByClassName("copyMenu-copied-message")[0];
 +  copiedText.classList.add('made-visible');
-+  setTimeout(function() { 
++  setTimeout(function() {
 +    optionText.classList.add('made-visible');
 +    optionText.classList.remove('not-visible');
 +    copiedText.classList.remove('made-visible');
@@ -1081,7 +1081,7 @@ index 0000000..ca737ff
 \ No newline at end of file
 diff --git a/static/js/iframe-common.js b/static/js/iframe-common.js
 new file mode 100644
-index 0000000..c14f5bb
+index 0000000..2f26f6e
 --- /dev/null
 +++ b/static/js/iframe-common.js
 @@ -0,0 +1,137 @@
@@ -1096,7 +1096,7 @@ index 0000000..c14f5bb
 +
 +/**
 + * Puts an iframe on the page of an Answers experience and sets up resizing and cross-domain communication
-+ * 
++ *
 + * @param {string} domain The location of the answers experience
 + * @param {AnswersExperienceFrame} answersExperienceFrame
 + */
@@ -1152,7 +1152,7 @@ index 0000000..c14f5bb
 +    iframeUrl += '?' + new_params.join('&');
 +    return iframeUrl;
 +  };
-+  
++
 +  iframe.src = calcFrameSrc();
 +  iframe.frameBorder = 0;
 +
@@ -1211,7 +1211,7 @@ index 0000000..c14f5bb
 +/**
 + * Sends data to the answers iframe if possible. Otherwise the message is queued
 + * so that it can be sent when the iframe initializes.
-+ * @param {Object} obj 
++ * @param {Object} obj
 + */
 +export function sendToIframe (obj) {
 +  const iframe = document.querySelector('#answers-frame');
@@ -1330,5 +1330,5 @@ index f7e392c..58c51c6 100644
 +  display: none;
 +}
 -- 
-2.36.1
+2.48.1
 
